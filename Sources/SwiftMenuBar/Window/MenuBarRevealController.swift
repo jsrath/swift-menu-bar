@@ -8,8 +8,10 @@ final class MenuBarRevealController {
     private var timer: Timer?
     private var isHiddenForReveal = false
     private var nativeMenuEngaged = false
+    private var triggerZoneEnteredAt: Date?
 
     private let triggerZone: CGFloat = 4
+    private let dwellDuration: TimeInterval = 0.5
     private let pollInterval: TimeInterval = 0.1
 
     func start(windows: [NSWindow]) {
@@ -25,6 +27,7 @@ final class MenuBarRevealController {
         timer = nil
         setHiddenForReveal(false)
         nativeMenuEngaged = false
+        triggerZoneEnteredAt = nil
         windows = []
     }
 
@@ -45,9 +48,18 @@ final class MenuBarRevealController {
                 && location.x <= screen.frame.maxX
 
             if inTriggerZone {
-                nativeMenuEngaged = true
+                if triggerZoneEnteredAt == nil {
+                    triggerZoneEnteredAt = Date()
+                }
+                if let enteredAt = triggerZoneEnteredAt,
+                   Date().timeIntervalSince(enteredAt) >= dwellDuration {
+                    nativeMenuEngaged = true
+                }
             } else if !inMenuBarStrip {
                 nativeMenuEngaged = false
+                triggerZoneEnteredAt = nil
+            } else if !nativeMenuEngaged {
+                triggerZoneEnteredAt = nil
             }
 
             setHiddenForReveal(nativeMenuEngaged && inMenuBarStrip)

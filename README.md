@@ -18,11 +18,39 @@ A native macOS menu bar replacement built with Swift and SwiftUI. Designed for [
 
 ## Setup
 
+### New machine
+
+1. Install prerequisites: Xcode Command Line Tools (`xcode-select --install`) and [yabai](https://github.com/koekeishiya/yabai).
+2. Clone and enter the repo:
+
 ```bash
 git clone https://github.com/jsrath/swift-menu-bar.git
 cd swift-menu-bar
+```
+
+3. Create your config (or let `./run.sh` create it from the example):
+
+```bash
 cp config.example.json ~/Library/Application\ Support/SwiftMenuBar/config.json
 ```
+
+4. Edit `~/Library/Application Support/SwiftMenuBar/config.json` with your settings (see table below).
+5. Configure yabai (see [yabai configuration](#yabai-configuration)).
+6. Build and launch:
+
+```bash
+./run.sh
+```
+
+7. Optional — start automatically at login:
+
+```bash
+./install-launch-agent.sh
+```
+
+Re-run `./install-launch-agent.sh` if you move or re-clone the repo to a different path.
+
+### Config reference
 
 Edit `~/Library/Application Support/SwiftMenuBar/config.json`:
 
@@ -52,7 +80,20 @@ Adjust `29` to match `barHeight` in your config.
 ./run.sh
 ```
 
-This builds `SwiftMenuBar.app`, ensures config exists, and launches the app.
+Builds `SwiftMenuBar.app` in the repo, kills any running instance, and launches it.
+
+Use `./run.sh` after pulling code changes or editing `config.json`.
+
+## Restart
+
+| Situation | Command |
+|-----------|---------|
+| Rebuild and relaunch | `./run.sh` |
+| Relaunch from Alfred / Spotlight | `open ~/code/swift-menu-bar/SwiftMenuBar.app` |
+| Restart the launch agent | `launchctl kickstart -k "gui/$(id -u)/dev.swift-menu-bar"` |
+| Stop the bar | `pkill -f SwiftMenuBar` |
+
+If you installed the launch agent, it will restart the app automatically after `pkill` (KeepAlive). Use `./run.sh` when you need a fresh build.
 
 ## Launch at Login
 
@@ -60,7 +101,7 @@ This builds `SwiftMenuBar.app`, ensures config exists, and launches the app.
 ./install-launch-agent.sh
 ```
 
-The install script generates a LaunchAgent with your local project path and waits for yabai before starting.
+Registers a LaunchAgent that waits for yabai before starting the app from this repo.
 
 ## Architecture
 
