@@ -19,7 +19,7 @@ A native macOS menu bar replacement built with Swift and SwiftUI. Designed for [
 ## Setup
 
 ```bash
-git clone https://github.com/jsrath-chalkboard/swift-menu-bar.git
+git clone https://github.com/jsrath/swift-menu-bar.git
 cd swift-menu-bar
 cp config.example.json ~/Library/Application\ Support/SwiftMenuBar/config.json
 ```
