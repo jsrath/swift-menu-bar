@@ -1,0 +1,8 @@
+{
+  "yabaiPath": "/opt/homebrew/bin/yabai",
+  "sheetURL": "https://docs.google.com/spreadsheets/d/e/YOUR_PUBLISHED_SHEET_ID/pub?gid=0&single=true&output=csv",
+  "sheetRefreshInterval": 600,
+  "fontName": "Roboto",
+  "fontSize": 12,
+  "barHeight": 29
+}

@@ -1,0 +1,7 @@
+.build/
+.swiftpm/
+SwiftMenuBar.app/
+*.dSYM/
+.DS_Store
+*.xcuserstate
+*.xcodeproj
