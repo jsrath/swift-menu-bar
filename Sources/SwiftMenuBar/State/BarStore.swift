@@ -8,6 +8,7 @@ final class BarStore {
     private(set) var spaces: [YabaiSpace] = []
     private(set) var sheetText = ""
     private(set) var battery: BatteryState?
+    private(set) var vpnSnapshot = VPNSnapshot.empty
 
     private let yabai = YabaiClient()
     private var currentSpaceIndex = 1
@@ -15,6 +16,7 @@ final class BarStore {
     private var spacesTask: Task<Void, Never>?
     private var sheetTask: Task<Void, Never>?
     private var batteryMonitor: BatteryMonitor?
+    private var vpnMonitor: VPNMonitor?
 
     func start() {
         batteryMonitor = BatteryMonitor { [weak self] state in
@@ -22,6 +24,12 @@ final class BarStore {
             battery = state
         }
         batteryMonitor?.start()
+
+        vpnMonitor = VPNMonitor { [weak self] snapshot in
+            guard let self, snapshot != vpnSnapshot else { return }
+            vpnSnapshot = snapshot
+        }
+        vpnMonitor?.start()
 
         Task { await refreshSpaces(force: true) }
         startSpacesLoop()
@@ -33,6 +41,7 @@ final class BarStore {
         spacesTask?.cancel()
         sheetTask?.cancel()
         batteryMonitor?.stop()
+        vpnMonitor?.stop()
     }
 
     func scheduleSpaceRefresh() {
@@ -73,6 +82,22 @@ final class BarStore {
     func openCalendar() {
         guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.iCal") else { return }
         NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+    }
+
+    func selectVPN(_ name: String) {
+        Task {
+            if vpnSnapshot.status.connectionName == name {
+                await ViscosityClient.disconnect(name)
+            } else {
+                await ViscosityClient.connect(name)
+            }
+            vpnMonitor?.refresh()
+            vpnMonitor?.scheduleBurstRefresh()
+        }
+    }
+
+    func refreshVPN() {
+        vpnMonitor?.refresh()
     }
 
     private func startSpacesLoop() {

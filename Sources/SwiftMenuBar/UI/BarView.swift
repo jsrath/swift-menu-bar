@@ -100,6 +100,48 @@ struct BarWidget: View {
     }
 }
 
+struct VPNWidget: View {
+    let label: String
+    let showsIndicator: Bool
+    let connections: [ViscosityConnection]
+    let onSelect: (String) -> Void
+
+    @State private var anchorView: NSView?
+
+    var body: some View {
+        Button {
+            guard let anchorView else { return }
+            VPNMenuPresenter.show(
+                connections: connections,
+                from: anchorView,
+                onSelect: onSelect
+            )
+        } label: {
+            HStack(spacing: 4) {
+                if showsIndicator {
+                    TimelineView(.animation(minimumInterval: 0.5)) { context in
+                        let phase = context.date.timeIntervalSinceReferenceDate
+                            .truncatingRemainder(dividingBy: 1.0)
+                        Text("🔴")
+                            .font(.system(size: 10))
+                            .opacity(phase < 0.5 ? 1 : 0)
+                    }
+                }
+
+                Text(label)
+                    .font(AppFont.primary(size: Configuration.fontSize))
+                    .foregroundStyle(Theme.vpnWidget)
+            }
+            .barButton(border: .white, horizontal: 7, vertical: 3)
+            .background(ViewAnchorReader(anchorView: $anchorView))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.leading, 4)
+        .accessibilityLabel("VPN menu")
+    }
+}
+
 struct BarView: View {
     @Bindable var store: BarStore
 
@@ -116,6 +158,15 @@ struct BarView: View {
             Spacer(minLength: 0)
 
             HStack(spacing: 0) {
+                if let vpnLabel = store.vpnSnapshot.status.label {
+                    VPNWidget(
+                        label: vpnLabel,
+                        showsIndicator: store.vpnSnapshot.status.showsIndicator,
+                        connections: store.vpnSnapshot.connections,
+                        onSelect: { store.selectVPN($0) }
+                    )
+                }
+
                 if !store.sheetText.isEmpty {
                     BarWidget(text: store.sheetText, textColor: Theme.fireWidget) {
                         Task { await store.refreshSheet() }

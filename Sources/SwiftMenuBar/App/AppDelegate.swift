@@ -36,6 +36,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let source = DispatchSource.makeSignalSource(signal: SIGUSR1, queue: .main)
         source.setEventHandler { [weak self] in
             self?.store.scheduleSpaceRefresh()
+            self?.store.refreshVPN()
         }
         source.resume()
         sigusr1Source = source
