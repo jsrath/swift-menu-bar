@@ -1,4 +1,5 @@
 import AppKit
+import QuartzCore
 
 /// Hides the custom bar at the screen's top edge so the native auto-reveal menu bar
 /// can draw on top. The bar stays in the menu-bar slot at all other times.
@@ -11,7 +12,8 @@ final class MenuBarRevealController {
     private var triggerZoneEnteredAt: Date?
 
     private let triggerZone: CGFloat = 4
-    private let dwellDuration: TimeInterval = 0.5
+    private let dwellDuration: TimeInterval = 0.3
+    private let revealAnimationDuration: TimeInterval = 0.25
     private let pollInterval: TimeInterval = 0.1
 
     func start(windows: [NSWindow]) {
@@ -25,7 +27,7 @@ final class MenuBarRevealController {
     func stop() {
         timer?.invalidate()
         timer = nil
-        setHiddenForReveal(false)
+        setHiddenForReveal(false, animated: false)
         nativeMenuEngaged = false
         triggerZoneEnteredAt = nil
         windows = []
@@ -67,13 +69,37 @@ final class MenuBarRevealController {
         }
     }
 
-    private func setHiddenForReveal(_ hidden: Bool) {
+    private func setHiddenForReveal(_ hidden: Bool, animated: Bool = true) {
         guard hidden != isHiddenForReveal else { return }
         isHiddenForReveal = hidden
 
-        for window in windows {
-            window.ignoresMouseEvents = hidden
-            window.alphaValue = hidden ? 0 : 1
+        guard animated else {
+            for window in windows {
+                window.ignoresMouseEvents = hidden
+                window.alphaValue = hidden ? 0 : 1
+            }
+            return
+        }
+
+        if hidden {
+            for window in windows {
+                window.ignoresMouseEvents = true
+            }
+        }
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = revealAnimationDuration
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            for window in windows {
+                window.animator().alphaValue = hidden ? 0 : 1
+            }
+        } completionHandler: {
+            Task { @MainActor [weak self] in
+                guard let self, !hidden else { return }
+                for window in windows {
+                    window.ignoresMouseEvents = false
+                }
+            }
         }
     }
 }

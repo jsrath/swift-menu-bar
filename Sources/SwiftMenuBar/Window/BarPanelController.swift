@@ -68,8 +68,8 @@ final class BarPanelController {
         )
 
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.statusWindow)) + 1)
-        window.backgroundColor = .clear
-        window.isOpaque = false
+        window.backgroundColor = Theme.nsBackground
+        window.isOpaque = true
         window.hasShadow = false
         window.isReleasedWhenClosed = false
         window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
