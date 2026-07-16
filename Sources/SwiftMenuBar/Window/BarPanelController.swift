@@ -41,6 +41,22 @@ final class BarPanelController {
         windows.removeAll()
     }
 
+    /// Non-destructively hide the bar (e.g. during full-screen video).
+    func hideWindows() {
+        for window in windows {
+            window.alphaValue = 0
+            window.ignoresMouseEvents = true
+        }
+    }
+
+    /// Restore the bar after exiting full-screen.
+    func showWindows() {
+        for window in windows {
+            window.alphaValue = 1
+            window.ignoresMouseEvents = false
+        }
+    }
+
     @objc private func screensChanged() {
         show()
     }
@@ -72,7 +88,7 @@ final class BarPanelController {
         window.isOpaque = true
         window.hasShadow = false
         window.isReleasedWhenClosed = false
-        window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle, .fullScreenAuxiliary]
+        window.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]
         window.hidesOnDeactivate = false
         window.isMovable = false
         window.isMovableByWindowBackground = false

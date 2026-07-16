@@ -158,6 +158,20 @@ struct BarView: View {
             Spacer(minLength: 0)
 
             HStack(spacing: 0) {
+                // TEMP — Colombia SITAC pre-fill (remove when automated polling works)
+                Button {
+                    store.openSitacPrefill()
+                } label: {
+                    Text("Visa")
+                        .font(AppFont.primary(size: Configuration.fontSize))
+                        .foregroundStyle(.white)
+                        .barButton(border: Theme.green, background: Theme.green.opacity(0.25), horizontal: 8, vertical: 4)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .padding(.leading, 4)
+                .help("Open SITAC form prefilled in Chrome — solve captcha, then click Consult. Second click focuses the existing window.")
+
                 if let vpnLabel = store.vpnSnapshot.status.label {
                     VPNWidget(
                         label: vpnLabel,

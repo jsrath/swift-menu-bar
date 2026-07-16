@@ -17,6 +17,10 @@ final class BarStore {
     private var sheetTask: Task<Void, Never>?
     private var batteryMonitor: BatteryMonitor?
     private var vpnMonitor: VPNMonitor?
+    private var wasFullScreen = false
+
+    /// Called when the bar should hide (yabai full-screen entered) or show (exited).
+    var onFullScreenChanged: ((Bool) -> Void)?
 
     func start() {
         batteryMonitor = BatteryMonitor { [weak self] state in
@@ -56,6 +60,14 @@ final class BarStore {
     func refreshSpaces(force: Bool = false) async {
         guard let snapshot = await yabai.snapshot() else { return }
         currentSpaceIndex = snapshot.currentSpaceIndex
+
+        // Detect yabai full-screen: the focused space has is-native-fullscreen
+        let isFullScreen = snapshot.spaces.first(where: \.hasFocus)?.isNativeFullscreen ?? false
+        if isFullScreen != wasFullScreen {
+            wasFullScreen = isFullScreen
+            onFullScreenChanged?(isFullScreen)
+        }
+
         guard force || snapshot.spaces != spaces else { return }
         spaces = snapshot.spaces
     }
@@ -94,6 +106,10 @@ final class BarStore {
             vpnMonitor?.refresh()
             vpnMonitor?.scheduleBurstRefresh()
         }
+    }
+
+    func openSitacPrefill() {
+        SitacClient.openPrefilledForm()
     }
 
     func refreshVPN() {
